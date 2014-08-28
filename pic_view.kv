@@ -1,0 +1,112 @@
+#:kivy 1.1.0
+
+<Root>:
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'top'
+        Label:
+            id: current_folder
+            text: 'current_folder'
+            size_hint_x: 0.1
+            size_hint_y: 0.05
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'top'
+        Button:
+            size_hint_x: 0.1
+            size_hint_y: 0.1
+            text: 'Load'
+            on_release: root.show_load()
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'top'
+        Button:
+            text: 'Next'
+            size_hint_x: 0.1
+            size_hint_y: 0.1
+            on_release: root.next_image()
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+        AsyncImage:
+            id: page
+            source: 'images/001.jpg'
+            size_hint_x: .9
+            size_hint_y: .9
+            pos_hint: {'center_x':.5, 'center_y':.5}
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'center'
+        Button:
+            text: 'Next Folder'
+            size_hint_x: 0.12
+            size_hint_y: 0.05
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'center'
+        Button:
+            text: 'Prev Folder'
+            size_hint_x: 0.12
+            size_hint_y: 0.05
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'bottom'
+        Button:
+            text: 'Prev'
+            size_hint_x: 0.1
+            size_hint_y: 0.1
+            on_release: root.prev_image()
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
+        Button:
+            text: 'Next'
+            size_hint_x: 0.1
+            size_hint_y: 0.1
+            on_release: root.next_image()
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'bottom'
+        Label:
+            id: current_file
+            text: 'current_file'
+            size_hint_x: 0.1
+            size_hint_y: 0.05
+
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        FileChooserListView:
+            id: filechooser
+            path: root.current_path
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Cancel'
+                on_release: root.cancel(filechooser.path)
+            Button:
+                text: 'Load'
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+
+<CustomPopup>:
+    size_hint: .20,.20
+    auto_dismiss: False
+    Button:
+        text: 'Dismiss'
+        size_hint_x: 1
+        size_hint_y: 1
+        on_press: root.dismiss()
+
+<ImagePage>:
+    on_size: self.center = win.Window.center
+    size: image.size
+    size_hint: None, None
+    Image:
+        source: root.source
