@@ -22,6 +22,7 @@ from kivy.core.image import Image
 from kivy.uix.image import AsyncImage
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.popup import Popup
+from kivy.uix.scatter import Scatter
 
 ### Layouts
 from kivy.core.window import Window
@@ -35,6 +36,7 @@ from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.properties import StringProperty
 from kivy.clock import Clock
+from kivy.core.window import Window
 
 class CustomPopup(Popup):
     content = ObjectProperty(None)
@@ -44,24 +46,15 @@ class CustomPopup(Popup):
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
     cancel = ObjectProperty(None)
-    current_path = ObjectProperty(None)
+    up = ObjectProperty(None)
     rootpath = StringProperty(None)
-    sortfunc = ObjectProperty(None)
-
-class ImagePage(Image):
-    source = StringProperty(None)
-    pass
+    current_path = ObjectProperty(None)
 
 class Root(AnchorLayout):
-
-    loadfile = ObjectProperty(None)
-    savefile = ObjectProperty(None)
-    text_input = ObjectProperty(None)
-
     image_index = 0
     folder_index = 0
     number_of_images = 0
-    merged_image_list = []
+    merged_image_list = [] # Combined image paths of all image types: png, jpg, gif.
 
     current_path = os.path.normcase('/')
     current_path_folders = glob.glob(os.path.normcase(os.path.join(current_path, '*')))
@@ -78,16 +71,16 @@ class Root(AnchorLayout):
         btn4 = self.ids.prev_top_left
         btn4.bind(state=self.on_down_prev_image)
 
-    def on_down_next_image(self, obj, value): # Hold down the button to cycle through images quickly.
+    def on_down_next_image(self, obj, value): # Hold down the button to cycle forward quickly.
         if (value == 'down'):
-            Clock.schedule_interval(self.next_callback, 0.15 / 1)
+            Clock.schedule_interval(self.next_callback, 0.105 / 1)
         else:
             Clock.unschedule(self.next_callback)
         # print("Typical property change from", obj, "to", value)
 
     def on_down_prev_image(self, obj, value): # Hold down button cycle reverse.
         if (value == 'down'):
-            Clock.schedule_interval(self.prev_callback, 0.15 / 1)
+            Clock.schedule_interval(self.prev_callback, 0.105 / 1)
         else:
             Clock.unschedule(self.prev_callback)
 
@@ -105,15 +98,28 @@ class Root(AnchorLayout):
     def dismiss_popup(self):
         self._popup.dismiss()
 
-    def dismiss_popup_filechooser(self, path):
+    def dismiss_popup_filechooser(self, path): # Save the current you were currently in upon cancel/dismissing load popup
         self.current_path = path
         self._popup.dismiss()
 
     ### File Chooser ###
     def show_load(self):
-        content = LoadDialog(load=self.load, cancel=self.dismiss_popup_filechooser, current_path=self.current_path, rootpath = '/')
-        self._popup = Popup(title="Load file", content=content, size_hint=(1, 1))
+        content = LoadDialog(load=self.load, up=self.go_up_dir, cancel=self.dismiss_popup_filechooser, current_path=self.current_path, rootpath = '/')
+        self._popup = Popup(title="Load Image..", content=content, size_hint=(1, 1))
         self._popup.open()
+
+    def go_up_dir(self, path):
+        pprint(path)
+        previous_path = os.path.dirname(path)
+        pprint(previous_path)
+        #self.ids.filechooser.path = previous_pat
+        #pprint(filechooser.path)
+        #up = os.path.dirname(os.path.dirname(path))
+        #self.ids.filechooser.path = up
+        #print(up)
+        #print(self.current_path)
+        #print(selection)
+        pass
 
     def load(self, path, filename):
         path = os.path.abspath(path)
@@ -152,31 +158,8 @@ class Root(AnchorLayout):
             self.show_popup('Invalid file.')
 
     ### Image ###
-    def create_image_list(self, path):
-        pngs = glob.glob(os.path.join(path, '*.png'))
-        jpgs = glob.glob(os.path.join(path, '*.jpg'))
-        gifs = glob.glob(os.path.join(path, '*.gif'))
-        merged_image_list = pngs + gifs + jpgs
-        merged_image_list = sorted(merged_image_list)
-        return merged_image_list
-
-    def change_image(self, filename):
-        self.ids.page.source = filename
-
-    def change_directory(self, path):
-        self.ids.filechooser.path = path
-
-    def get_current_image_count(self):
-        s1 = str(self.image_index)
-        s2 = str((self.number_of_images-1))
-        print(self.number_of_images)
-        if (self.number_of_images == 0):
-            return False
-        else:
-            print('test')
-            print("".join( [s1, '/', s2] ))
-            return "".join( [s1, '/', s2] )
-
+    # Goes to the next image.
+    # If you go to the next image when you are on the last, go to the first image of the next directory.
     def next_image(self):
         print( "".join(['merged_image_list count:', str(len(self.merged_image_list))]) )
 
@@ -184,7 +167,7 @@ class Root(AnchorLayout):
             self.image_index += 1
             self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
             path = self.previous_path_folders[self.folder_index]
-            self.set_file_label(os.path.normcase(path))
+            self.set_file_label(os.path.normcase(path[-20:])) # Set it to the last 20 characters of string path.
         else:
             print(self.folder_index)
             print(len(self.previous_path_folders)-1)
@@ -207,6 +190,8 @@ class Root(AnchorLayout):
 
         print("".join([str(self.image_index), '/', str((self.number_of_images-1))]))
 
+    # Goes to the previous image.
+    # If you go to the previous image when you are on the first, go to the last image of the previous directory.
     def prev_image(self):
         print( "".join(['merged_image_list count:', str(len(self.merged_image_list))]) )
 
@@ -214,7 +199,7 @@ class Root(AnchorLayout):
             self.image_index -= 1
             self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
             path = self.previous_path_folders[self.folder_index]
-            self.set_file_label(os.path.normcase(path))
+            self.set_file_label(os.path.normcase(path[-20:])) # Set it to the last 20 characters of string path.
         else:
             print(self.folder_index)
             print(len(self.previous_path_folders)-1)
@@ -226,21 +211,56 @@ class Root(AnchorLayout):
                 self.current_path_folders = glob.glob(os.path.join(path, '*'))
                 self.merged_image_list = self.create_image_list(path)
                 self.number_of_images = len(self.merged_image_list)
-                self.image_index = 0
+                self.image_index = (self.number_of_images-1) # Last image of the previous folder.
                 if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg, .gif, etc.
                     self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
                 else:
                     self.change_image(os.path.normcase('images/no_image.jpg'))
             else:
                 self.folder_index = len(self.previous_path_folders)-1 # Go to the last folder.
-                self.image_index = 0
+                if (self.previous_path_folders):
+                    pprint(self.previous_path_folders)
+                    path = self.previous_path_folders[self.folder_index]
+                    self.current_path_folders = glob.glob(os.path.join(path, '*'))
+                    self.merged_image_list = self.create_image_list(path)
+                    self.number_of_images = len(self.merged_image_list)
+                    self.image_index = (self.number_of_images-1)
+                    if (self.number_of_images > 0):
+                        self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
+                        self.set_file_label(os.path.normcase(path[-20:])) # Set it to the last 20 characters of string path.
+
         print("".join([str(self.image_index), '/', str((self.number_of_images-1))]))
+
+    def create_image_list(self, path):
+        pngs = glob.glob(os.path.join(path, '*.png'))
+        jpgs = glob.glob(os.path.join(path, '*.jpg'))
+        gifs = glob.glob(os.path.join(path, '*.gif'))
+        merged_image_list = pngs + gifs + jpgs
+        merged_image_list = sorted(merged_image_list)
+        return merged_image_list
+
+    def change_image(self, filename):
+        self.ids.page.source = filename
+        #self.ids.center_parent.pos = (0,0)    # Return the image moved to the center of the screen.
+        self.ids.scatter.scale = 1   # Unzoom the image.
+        self.ids.page.pos = (0,0)    # Return the image moved to the center of the screen.
+        self.ids.scatter.pos = (0,0) # Return the image moved to the center of the screen.
+
+    def get_current_image_count(self):
+        s1 = str(self.image_index)
+        s2 = str((self.number_of_images-1))
+        print(self.number_of_images)
+        if (self.number_of_images == 0):
+            return False
+        else:
+            print("".join( [s1, '/', s2] ))
+            return "".join( [s1, '/', s2] )
 
     ### Set Labels ###
     def set_file_label(self, filename):
         filename = os.path.basename(filename)
         if (self.number_of_images > 0):
-            text = "".join(['.../', filename, '       ', str(self.image_index+1), '/', str(self.number_of_images)])
+            text = "".join(['.../', filename, '    ', str(self.image_index+1), '/', str(self.number_of_images)])
         else:
             text = filename
         self.ids.current_file.text = text
@@ -248,11 +268,19 @@ class Root(AnchorLayout):
     def set_folder_label(self, folder):
         self.ids.current_folder.text = folder
 
+    ### Pause/Resume####
+    def on_pause(self):
+    # Here you can save data if needed
+        return True
+
+    def on_resume(self):
+    # Here you can check if any data needs replacing (usually nothing)
+        pass
+
 class main(App):
     def build(self):
         root = Root()
         root.initialize_button_binds() # Initialize button binds.
-        print('test')
         return(root)
 
 if __name__ == '__main__':
