@@ -3,13 +3,8 @@
 #:import win kivy.core.window
 
 <Root>:
-    # Center # First child element so that the other children element hover over this.
-    #AnchorLayout:
-        #id: center_parent
-        #anchor_x: 'left'
-        #anchor_y: 'bottom'
-        #size: root.size
-        #pos: (0, 0)
+    # Center.
+    # Has to be first child element so that the other children elements hover over this one.
     FloatLayout:
         pos: (0, 0)
         Scatter:
@@ -22,18 +17,24 @@
             auto_bring_to_front: False
             scale_min: 1
             scale_max: 1.5
-            size_hint: None, None       # Allow the parent(AnchorLayout) to determine the location of the Scatter container
+            size_hint: None, None       # Set to None, None to allow the parent(AnchorLayout) to determine the location of the Scatter container
             width: root.width
             height: (root.height-20)
             pos: (0, 0)
-            AsyncImage:
+            #AsyncImage:
+                #allow_stretch: True
+                #id: page
+                #source: 'images/no_image.jpg'
+                #width: (root.width)   # Centers the image.
+                #height: (root.height-20) # Centers the image.
+                #pos: (0, 0)
+            Image:
                 #allow_stretch: True
                 id: page
                 source: 'images/no_image.jpg'
                 width: (root.width)   # Centers the image.
                 height: (root.height-20) # Centers the image.
                 pos: (0, 0)
-
     # Top
     AnchorLayout:
         anchor_x: 'center'
@@ -42,85 +43,62 @@
             id: current_file
             text: 'pic view' # Title
             size_hint_x: 0.2
-            size_hint_y: 0.04
-    AnchorLayout:
-        anchor_x: 'left'
-        anchor_y: 'top'
-        Button:
-            id: prev_top_left
-            text: 'Prev'
-            size_hint_x: 0.2
-            size_hint_y: 0.04
-            on_press: root.prev_image()
-    AnchorLayout:
-        anchor_x: 'right'
-        anchor_y: 'top'
-        Button:
-            id: next_top_right
-            text: 'Next'
-            size_hint_x: 0.2
-            size_hint_y: 0.04
-            on_press: root.next_image()
+            size_hint_y: 0.03
     # Bottom
     AnchorLayout:
-        anchor_x: 'left'
-        anchor_y: 'bottom'
-        Button:
-            id: prev_bottom_left
-            text: 'Prev'
-            size_hint_x: 0.33
-            size_hint_y: 0.04
-            on_press: root.prev_image()
-    AnchorLayout:
         anchor_x: 'right'
-        anchor_y: 'bottom'
-        Button:
-            id: next_bottom_right
-            text: 'Next'
-            size_hint_x: 0.33
-            size_hint_y: 0.04
-            on_press: root.next_image()
-    AnchorLayout:
-        anchor_x: 'center'
         anchor_y: 'bottom'
         BoxLayout:
             size_hint_x: 0.3
             Button:
-                text: 'load'
-                size_hint_x: 0.135
-                size_hint_y: 0.04
-                on_release: root.show_load()
+                id: prev_bottom_left
+                text: 'Prev'
+                size_hint_x: 0.2
+                size_hint_y: 0.09
+                on_press: root.prev_image()
             Button:
-                text: 'settings'
-                size_hint_x: 0.135
-                size_hint_y: 0.04
-                #on_release: root.show_load()
+                id: next_bottom_right
+                text: 'Next'
+                size_hint_x: 0.2
+                size_hint_y: 0.09
+                on_press: root.next_image()
+    AnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'bottom'
+        BoxLayout:
+            size_hint_x: 0.2
+            Button:
+                text: 'load'
+                size_hint_x: 0.2
+                size_hint_y: 0.09
+                on_release: root.show_load()
 
-<LoadDialog>:
+<FileChooser>:
     BoxLayout:
         size: root.size
         pos: root.pos
         orientation: 'vertical'
         FileChooserListView:
             id: filechooser
-
+            path: root.current_path
+            filters: ['*.png', '*.jpg', '*.gif', '*.cbz'] # Will show only the files with these extensions. Reduces time it takes to populate file list.
         BoxLayout:
             size_hint_y: 0.2
             height: 30
             Button:
                 text: 'Cancel'
                 size_hint_x: 0.31
-                size_hint_y: 0.7
+                size_hint_y: 0.4
                 on_release: root.cancel(filechooser.path) # Save the current you were currently in upon cancel/dismissing load popup
             Button:
                 text: 'Up'
                 size_hint_x: 0.31
-                size_hint_y: 0.7
-                on_release: root.up(filechooser.path)
+                size_hint_y: 0.4
+                on_release: root.go_up_dir(filechooser.path)
             Button:
                 text: 'Load'
                 size_hint_x: 0.31
-                size_hint_y: 0.7
+                size_hint_y: 0.4
                 on_release: root.load(filechooser.path, filechooser.selection)
 
 
