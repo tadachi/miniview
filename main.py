@@ -1,3 +1,18 @@
+# Author: Takumi 'takada' Adachi
+# Copyright 2014-2015
+# Pic View
+# A python-for-android kivy image-viewing app ideal for reading scanlated manga images.
+#
+# Features
+# - Cycle to the next directory images upon hitting the last image. Key feature for cycling through chapters separated in directories.
+# - One handed viewing of images.
+# - Hold button down to quickly cycle through images.
+# - Small, lightweight and made to do a small number of tasks well.
+# - Open source and completely free.
+# - Move image around.
+# - Zoom-in
+
+
 import kivy
 kivy.require('1.0.6')
 
@@ -55,7 +70,6 @@ class FileChooser(FloatLayout):
 
     def go_up_dir(self, path):
         previous_path = os.path.dirname(path)
-        pprint(previous_path)
         self.set_filechooser_path(previous_path)
 
     def set_filechooser_path(self, path):
@@ -65,7 +79,7 @@ class Root(AnchorLayout):
     image_index = 0
     folder_index = 0
     number_of_images = 0
-    merged_image_list = [] # Combined image paths of all image types: png, jpg, gif.
+    merged_image_list = [] # Combined image paths of all image types: png, jpg.
 
     current_path = os.path.normcase('/')
     current_path_folders = glob.glob(os.path.normcase(os.path.join(current_path, '*')))
@@ -80,13 +94,15 @@ class Root(AnchorLayout):
 
     def on_down_next_image(self, obj, value): # Hold down the button to cycle forward quickly.
         if (value == 'down'):
-            Clock.schedule_interval(self.next_callback, 0.18 / 1)
+            self.next_image()
+            Clock.schedule_interval(self.next_callback, 0.375 / 1)
         else:
             Clock.unschedule(self.next_callback)
 
     def on_down_prev_image(self, obj, value): # Hold down button cycle reverse.
         if (value == 'down'):
-            Clock.schedule_interval(self.prev_callback, 0.18 / 1)
+            self.prev_image()
+            Clock.schedule_interval(self.prev_callback, 0.375 / 1)
         else:
             Clock.unschedule(self.prev_callback)
 
@@ -111,12 +127,11 @@ class Root(AnchorLayout):
     ### File Chooser ###
     def show_load(self):
         content = FileChooser(load=self.load, cancel=self.dismiss_popup_filechooser, current_path=self.current_path, rootpath = '/')
-        self._popup = Popup(title="Load Image: .jpg, .png, .gif only.", content=content, size_hint=(1, 1))
+        self._popup = Popup(title="Load Image: .jpg, .png only.", content=content, size_hint=(1, 1))
         self._popup.open()
 
     def load(self, path, filename):
         path = os.path.abspath(path)
-        print(path)
         self.folder_index = 0
         self.merged_image_list = self.create_image_list(path)
 
@@ -127,9 +142,7 @@ class Root(AnchorLayout):
         self.current_path_folders = [folder for folder in self.current_path_folders if os.path.isdir(folder) == True] # Filter for only folders and keep out .txt files, .exe files, etc
 
         if (filename): # Select a file then load.
-            pprint(self.merged_image_list)
-            if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg, .gif, etc.
-                # pprint(self.previous_path_folders)
+            if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg.
                 for i in range(0, len(self.previous_path_folders)):
                     if ( os.path.normcase(path) in os.path.normcase(self.previous_path_folders[i]) ):
                         self.folder_index = i
@@ -143,7 +156,7 @@ class Root(AnchorLayout):
             #if ( filename[0].endswith('.jpg') or filename[0].endswith('.png') ):
                 self.change_image(os.path.normcase(filename[0]))
 
-                self.set_file_label(os.path.normcase(path)) # normcase converts forward slashes to backwards slashes, converts upper to lower in case-insensitive filesystems.
+                self.set_file_label(os.path.normcase(filename[0])) # normcase converts forward slashes to backwards slashes, converts upper to lower in case-insensitive filesystems.
 
                 self.dismiss_popup_filechooser(path)
             else:
@@ -155,34 +168,33 @@ class Root(AnchorLayout):
     # Goes to the next image.
     # If you go to the next image when you are on the last, go to the first image of the next directory.
     def next_image(self):
-        print( "".join(['merged_image_list count:', str(len(self.merged_image_list))]) )
-
         if ( (self.image_index+1) <= self.number_of_images-1 ):
             self.image_index += 1
             self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
             path = self.previous_path_folders[self.folder_index]
-            self.set_file_label(os.path.normcase(path)) # Set it to the last 20 characters of string path.
+            self.set_file_label( os.path.normcase(self.merged_image_list[self.image_index]) )
         else:
-            print(self.folder_index)
-            print(len(self.previous_path_folders)-1)
+            print( "".join(['folder: ', str(self.folder_index), '/', str((len(self.previous_path_folders)-1))]) ) # Print folder count in currenty directory.
 
             if ( (self.folder_index+1) <= len(self.previous_path_folders)-1 ): # Go to next folder.
                 self.folder_index += 1
                 path = self.previous_path_folders[self.folder_index]
-                self.set_file_label(os.path.normcase(path))
                 self.current_path_folders = glob.glob(os.path.join(path, '*'))
                 self.merged_image_list = self.create_image_list(path)
                 self.number_of_images = len(self.merged_image_list)
                 self.image_index = 0
-                if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg, .gif, etc.
+                if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg.
+
+                    self.set_file_label( os.path.normcase(self.merged_image_list[self.image_index]) ) # Change the file label and image count.
                     self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
                 else:
-                    self.change_image(os.path.normcase('images/no_image.jpg'))
+                    self.set_file_label(os.path.normcase(path))  # Change the file label and image count.
+                    self.change_image(os.path.normcase('images/black_screen.png'))
             else:
                 self.folder_index = 0 # Go to the first folder.
                 self.image_index = 0
 
-        print("".join([str(self.image_index), '/', str((self.number_of_images-1))]))
+        print("".join(['image: ', str(self.image_index), '/', str((self.number_of_images-1))]))
 
     # Goes to the previous image.
     # If you go to the previous image when you are on the first, go to the last image of the previous directory.
@@ -191,29 +203,29 @@ class Root(AnchorLayout):
 
         if ( (self.image_index-1) >= 0):
             self.image_index -= 1
-            self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
+            self.change_image( os.path.normcase(self.merged_image_list[self.image_index]) )
             path = self.previous_path_folders[self.folder_index]
-            self.set_file_label(os.path.normcase(path))
+            self.set_file_label( os.path.normcase(self.merged_image_list[self.image_index]) )
         else:
-            print(self.folder_index)
-            print(len(self.previous_path_folders)-1)
+            print( "".join(['folder: ', str(self.folder_index), '/', str((len(self.previous_path_folders)-1))]) ) # Print folder count in currenty directory.
 
             if ( (self.folder_index-1) >= 0 ): # Go to previous folder.
                 self.folder_index -= 1
                 path = self.previous_path_folders[self.folder_index]
-                self.set_file_label(os.path.normcase(path))
                 self.current_path_folders = glob.glob(os.path.join(path, '*'))
                 self.merged_image_list = self.create_image_list(path)
                 self.number_of_images = len(self.merged_image_list)
                 self.image_index = (self.number_of_images-1) # Last image of the previous folder.
-                if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg, .gif, etc.
+
+                if (self.merged_image_list): # If there's at least one valid image file with .png, .jpg.
+                    self.set_file_label( os.path.normcase(self.merged_image_list[self.image_index]) ) # Change the file label and image count.
                     self.change_image(os.path.normcase(self.merged_image_list[self.image_index]))
                 else:
-                    self.change_image(os.path.normcase('images/no_image.jpg'))
+                    self.set_file_label(os.path.normcase(path))  # Change the file label and image count.
+                    self.change_image(os.path.normcase('images/black_screen.png'))
             else:
                 self.folder_index = len(self.previous_path_folders)-1 # Go to the last folder.
                 if (self.previous_path_folders):
-                    pprint(self.previous_path_folders)
                     path = self.previous_path_folders[self.folder_index]
                     self.current_path_folders = glob.glob(os.path.join(path, '*'))
                     self.merged_image_list = self.create_image_list(path)
@@ -228,40 +240,30 @@ class Root(AnchorLayout):
     def create_image_list(self, path):
         pngs = glob.glob(os.path.join(path, '*.png'))
         jpgs = glob.glob(os.path.join(path, '*.jpg'))
-        gifs = glob.glob(os.path.join(path, '*.gif'))
-        cbzs = glob.glob(os.path.join(path, '*.cbz'))
-        merged_image_list = pngs + gifs + jpgs + cbzs
+        merged_image_list = pngs + jpgs
         merged_image_list = sorted(merged_image_list)
         return merged_image_list
 
     def change_image(self, filename):
         self.ids.page.source = filename
-        #self.ids.center_parent.pos = (0,0)    # Return the image moved to the center of the screen.
         self.ids.scatter.scale = 1   # Unzoom the image.
         self.ids.page.pos = (0,0)    # Return the image moved to the center of the screen.
-        self.ids.scatter.pos = (0,0) # Return the image moved to the center of the screen.
-
-    def get_current_image_count(self):
-        s1 = str(self.image_index)
-        s2 = str((self.number_of_images-1))
-        print(self.number_of_images)
-        if (self.number_of_images == 0):
-            return False
-        else:
-            print("".join( [s1, '/', s2] ))
-            return "".join( [s1, '/', s2] )
+        self.ids.scatter.pos = (0,0) # Also return the image moved to the center of the screen.
 
     ### Set Labels ###
     def set_file_label(self, filename):
-        filename = os.path.basename(filename)
-        if (self.number_of_images > 0):
-            text = "".join(['.../', filename, '    ', str(self.image_index+1), '/', str(self.number_of_images)])
-        else:
-            text = filename
-        self.ids.current_file.text = text
+        # If filename = foo/bar/baz.jpg.
+        dirname = os.path.basename(os.path.split(filename)[0]) # bar
+        basename = os.path.basename(os.path.basename(filename)) # baz.jpg
+        filename = os.path.join(dirname,basename) # bar/baz.jpg
 
-    def set_folder_label(self, folder):
-        self.ids.current_folder.text = folder
+        if (self.number_of_images > 0):
+            text = "".join(['...',filename[-30:], '    ', str(self.image_index+1), '/', str(self.number_of_images)]) # bar/baz.jpg 1/3 but show only the last 30 characters.
+        else:
+            filename = os.path.basename(filename)
+            text = filename[-30:] # bar from foo/bar but show only the last 30 characters.
+
+        self.ids.current_file.text = text
 
 class main(App):
     def build(self):

@@ -4,7 +4,7 @@
 title = Pic View
 
 # (str) Package name
-package.name = picview
+package.name = pic_view
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.pic_view

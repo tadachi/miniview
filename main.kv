@@ -7,6 +7,7 @@
     # Has to be first child element so that the other children elements hover over this one.
     FloatLayout:
         pos: (0, 0)
+
         Scatter:
             id: scatter
             do_scale: True
@@ -21,17 +22,12 @@
             width: root.width
             height: (root.height-20)
             pos: (0, 0)
-            #AsyncImage:
-                #allow_stretch: True
-                #id: page
-                #source: 'images/no_image.jpg'
-                #width: (root.width)   # Centers the image.
-                #height: (root.height-20) # Centers the image.
-                #pos: (0, 0)
+
             Image:
-                #allow_stretch: True
+                allow_stretch: True
                 id: page
-                source: 'images/no_image.jpg'
+                nocache: True # VERY IMPORTANT: if android caches each image and you read more than a couple hundred, it will crash the app.
+                source: 'images/black_screen.png'
                 width: (root.width)   # Centers the image.
                 height: (root.height-20) # Centers the image.
                 pos: (0, 0)
@@ -44,32 +40,33 @@
             text: 'pic view' # Title
             size_hint_x: 0.2
             size_hint_y: 0.03
+            color: [25,30,25,30]
     # Bottom
     AnchorLayout:
         anchor_x: 'right'
         anchor_y: 'bottom'
         BoxLayout:
-            size_hint_x: 0.3
+            size_hint_x: 0.4
             Button:
                 id: prev_bottom_left
                 text: 'Prev'
-                size_hint_x: 0.2
+                size_hint_x: 0.5
                 size_hint_y: 0.09
-                on_press: root.prev_image()
+                #on_release: root.prev_image()
             Button:
                 id: next_bottom_right
                 text: 'Next'
-                size_hint_x: 0.2
+                size_hint_x: 0.5
                 size_hint_y: 0.09
-                on_press: root.next_image()
+                #on_release: root.next_image()
     AnchorLayout:
         anchor_x: 'left'
         anchor_y: 'bottom'
         BoxLayout:
-            size_hint_x: 0.2
+            size_hint_x: 0.1
             Button:
                 text: 'load'
-                size_hint_x: 0.2
+                size_hint_x: 1
                 size_hint_y: 0.09
                 on_release: root.show_load()
 
@@ -81,7 +78,7 @@
         FileChooserListView:
             id: filechooser
             path: root.current_path
-            filters: ['*.png', '*.jpg', '*.gif', '*.cbz'] # Will show only the files with these extensions. Reduces time it takes to populate file list.
+            filters: ['*.png', '*.jpg'] # Will show only the files with these extensions. Reduces time it takes to populate file list.
         BoxLayout:
             size_hint_y: 0.2
             height: 30
@@ -89,7 +86,7 @@
                 text: 'Cancel'
                 size_hint_x: 0.31
                 size_hint_y: 0.4
-                on_release: root.cancel(filechooser.path) # Save the current you were currently in upon cancel/dismissing load popup
+                on_release: root.cancel(filechooser.path) # Save the current you were currently in upon cancel/dismissing load popup.
             Button:
                 text: 'Up'
                 size_hint_x: 0.31
