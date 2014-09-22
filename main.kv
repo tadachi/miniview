@@ -37,13 +37,13 @@
         anchor_y: 'top'
         Label:
             id: current_file
-            text: 'pic view' # Title
+            text: 'miniview' # Title
             size_hint_x: 0.2
             size_hint_y: 0.03
             color: [25,30,25,30]
     # Bottom
     AnchorLayout:
-        anchor_x: 'right'
+        anchor_x: 'left'
         anchor_y: 'bottom'
         BoxLayout:
             size_hint_x: 0.4
@@ -60,7 +60,7 @@
                 size_hint_y: 0.09
                 #on_release: root.next_image()
     AnchorLayout:
-        anchor_x: 'left'
+        anchor_x: 'right'
         anchor_y: 'bottom'
         BoxLayout:
             size_hint_x: 0.1

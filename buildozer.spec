@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = Pic View
+title = Miniview
 
 # (str) Package name
-package.name = pic_view
+package.name = miniview
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.pic_view
+package.domain = org.app
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -22,14 +22,14 @@ source.include_exts = py,png,jpg,kv,atlas
 source.exclude_dirs = tests, bin, screenshots
 
 # (list) List of exclusions using pattern matching
-#source.exclude_patterns = license,images/*/*.jpg
+source.exclude_patterns = license,screenshots/*,screenshots,bin,bin/*,.gitignore,README.md
 
 # (str) Application versioning (method 1)
 #version.regex = __version__ = ['"](.*)['"]
 #version.filename = %(source.dir)s/main.py
 
 # (str) Application versioning (method 2)
-version = 1.0.0
+version = 1.0.1
 
 # (list) Application requirements
 requirements = kivy
@@ -61,7 +61,7 @@ fullscreen = 1
 #android.api = 14
 
 # (int) Minimum API required (8 = Android 2.2 devices)
-#android.minapi = 13
+android.minapi = 13
 
 # (int) Android SDK version to use
 #android.sdk = 21

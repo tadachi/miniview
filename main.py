@@ -1,6 +1,6 @@
 # Author: Takumi 'takada' Adachi
 # Copyright 2014-2015
-# Pic View
+# miniview
 # A python-for-android kivy image-viewing app ideal for reading scanlated manga images.
 #
 # Features

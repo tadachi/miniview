@@ -1,9 +1,7 @@
-Pic View
-=========
+Miniview
+========
 
-get it here: https://play.google.com/store/apps/details?id=org.pic_view.pic_view
-
-'Pic View' is a PNG and JPG image-viewing app ideal for reading locally stored scanlated manga images.
+'Miniview' is a PNG and JPG image-viewing app ideal for reading locally stored scanlated manga images.
 
 Created with Python, Kivy, python-for-android, and buildozer.
 
